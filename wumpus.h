@@ -20,7 +20,7 @@ public:
 	/* mutators */
 	void percept() override;
 	std::string encounter() override;
-	bool wumpus_hit();
+	bool wumpus_hit() override;
 };
 
 #endif
