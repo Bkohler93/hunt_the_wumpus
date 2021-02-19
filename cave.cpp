@@ -146,11 +146,11 @@ void Cave::projectile_arrow_west()
 			wumpus_dead = true;
 			game_over = true;
 			return;
-		}
-	
-	missed_shot = true;
+		}	
 	}
+	missed_shot= true;
 }
+
 
 /*
 * show arrow flying north, check if wumpus is hit
@@ -171,9 +171,8 @@ void Cave::projectile_arrow_east()
 			game_over = true;
 			return;
 		}
-	
-	missed_shot = true;
 	}
+	missed_shot = true;
 }
 
 /*
@@ -196,9 +195,8 @@ void Cave::projectile_arrow_south()
 			game_over = true;
 			return;
 		}
-	
-	missed_shot = true;
 	}
+	missed_shot = true;
 }
 
 

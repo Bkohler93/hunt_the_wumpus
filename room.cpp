@@ -42,7 +42,8 @@ bool Room::check_unplaced() const
 }
 
 /*
-* check if arrow hits wumpus
+* check if arrow hits wumpus, wll true only if wumpus got hit,
+* no other objects
 */
 bool Room::arrow_hit_wumpus() const
 {
