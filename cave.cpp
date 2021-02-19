@@ -22,6 +22,8 @@ Cave::Cave(int cave_size) : adventurer(cave_size, 0, 0)
 	this->cave_size = cave_size;
 	this->run_debug = true;
 	this->game_over = false;
+	this->missed_shot = false;
+	this->wumpus_dead = false;
 }
 
 /* getters */
@@ -195,6 +197,8 @@ void Cave::projectile_arrow_south()
 			game_over = true;
 			return;
 		}
+		//check if a different room was hit
+		if ((y + i >= 0) && !rooms[x][y + i].check_if_room_empty()) break;
 	}
 	missed_shot = true;
 }
@@ -212,7 +216,7 @@ void Cave::fill_cave()
 	adventurer.set_x(rand() % cave_size); 
 	adventurer.set_y(rand() % cave_size);
 
-	//place wumpus
+	//place wumpus ***PACKAGE INTO OWN FUNCTION***
 	event = new Wumpus;
 	
 	do
@@ -220,13 +224,23 @@ void Cave::fill_cave()
 		x = rand() % cave_size; y = rand() % cave_size;
 	} while (y == adventurer.get_x() && x == adventurer.get_y());
 
-	if (rooms[y][x].check_unplaced()) 
+	if (rooms[y][x].check_if_room_empty()) 
 	{
 		rooms[y][x].set_event(event, y, x);
 	}
 
-	//place bats
+
+
+	//place bats ***PACKAGE INTO OWN FUNCTION***
+	event = new Bats;
+	do
+	{
+		x = rand() % cave_size; y = rand() % cave_size;
+	} while (y == adventurer.get_x() && x == adventurer.get_y() && !rooms[y][x].check_if_room_empty());
+
+	rooms[y][x].set_event(event, y, x);
 }
+
 
 //checks around adventurer for events, uses correct percept if there is an event
 bool Cave::check_for_events()
@@ -280,10 +294,33 @@ bool Cave::check_if_on_event()
 //does repurcussions from landing on event
 void Cave::run_event(const std::string& event_name)
 {
-	//perform results of Wumpus
+	//perform results of Wumpus ***MAYBE REPACKAGE?***
 	if (event_name == "wumpus")
 	{
 		game_over = true; return;
+	}
+
+	//perform results of Bats ***MAYBE REPACKAGE?***
+	else if (event_name == "bats")
+	{	
+		srand(time(NULL));
+		//store adventurer's current location and create new location
+		int x = adventurer.get_x(); int new_x;
+		int y = adventurer.get_y(); int new_y;
+
+		//continue to reassign adventurer coordinates if same coordinates are 
+		//populated
+		do
+		{
+			new_x = rand() % cave_size; new_y = rand() % cave_size;
+		}	while (new_x == x && new_y == y);
+		
+		//set new adventurer position from bats teleporting character
+		adventurer.set_x(new_x); adventurer.set_y(new_y);
+
+		//pause for user to press enter before continue
+		user_pause();
+		std::cout << *this << std::endl;	//print cave with new location
 	}
 }
 

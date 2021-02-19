@@ -23,7 +23,7 @@ public:
 	void set_event(Event*, int, int);
 
 	/* mutators */
-	bool check_unplaced() const;
+	
 	bool arrow_hit_wumpus() const;
 	bool check_if_room_empty() const;
 

@@ -18,4 +18,7 @@ int check_choice_in_range(string, int, int);	//checks if user's card choice is v
 char getch(void);
 
 
+void user_pause();
+
+
 #endif
