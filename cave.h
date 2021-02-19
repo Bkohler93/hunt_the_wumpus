@@ -5,9 +5,9 @@
 #include "room.h"
 #include "adventurer.h"
 #include "wumpus.h"
+#include "bats.h"
 #include <iostream>
 #include "error_check.h"
-#include <ctime>
 
 class Cave 
 {
@@ -35,7 +35,7 @@ public:
 	int get_player_choice();
 	void move_adventurer(int ascii_char);
 	void fire_arrow();
-	void fill_cave();
+	void fill_cave();		//fills cave with all events and adventurer randomly
 	bool check_for_events();
 	bool check_if_on_event();
 	void run_event(const std::string&);

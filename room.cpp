@@ -30,16 +30,16 @@ void Room::set_event(Event* event, int x, int y)
 }
 
 /* mutators */
-bool Room::check_unplaced() const
-{
-	if (event == nullptr) {
-		return true;
-	}
-	return false;
-	//if coords are still initialized to -1 return true;
-	//((event->get_x() == -1) && (event->get_y() == -1)) ? return true : return false;
+// bool Room::check_unplaced() const
+// {
+// 	if (event == nullptr) {
+// 		return true;
+// 	}
+// 	return false;
+// 	//if coords are still initialized to -1 return true;
+// 	//((event->get_x() == -1) && (event->get_y() == -1)) ? return true : return false;
 
-}
+// }
 
 /*
 * check if arrow hits wumpus, wll true only if wumpus got hit,

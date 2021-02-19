@@ -25,10 +25,10 @@ int main()
 		}
 
 		//check if adventurer is on event
-		while (cave.check_if_on_event() && !(cave.get_game_over())) 
-		{
+	//	while (cave.check_if_on_event() && !(cave.get_game_over())) 
+	//	{
 			cave.check_if_on_event();
-		}
+	//	}
 
 		if (cave.get_game_over()) break;
 		else if (cave.check_for_events()) continue;

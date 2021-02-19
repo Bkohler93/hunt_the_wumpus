@@ -52,3 +52,11 @@ char getch(void)
     //printf("%c\n", buf);	//option to print out char
     return buf;
  }
+
+
+ /* pauses, waits for user to press enter */
+ void user_pause()
+ {
+    std::cout << "Press 'enter' to continue: ";
+    std::cin.ignore(256, '\n');
+ }
