@@ -1,6 +1,8 @@
 #include "cave.h"
 
-Cave::Cave(int cave_size) : adventurer(cave_size, 0, 0)
+
+//constructor
+Cave::Cave(int cave_size, bool debug_on) : adventurer(cave_size, 0, 0)
 {
 	int room_count = 0;
 
@@ -20,7 +22,7 @@ Cave::Cave(int cave_size) : adventurer(cave_size, 0, 0)
 
 	//take in cave size
 	this->cave_size = cave_size;
-	this->run_debug = true;
+	this->run_debug = debug_on;
 	this->game_over = false;
 	this->missed_shot = false;
 	this->wumpus_dead = false;
@@ -45,6 +47,26 @@ void Cave::set_missed_shot(bool missed_shot)
 	this->missed_shot = missed_shot;
 }
 
+void Cave::set_game_over(bool game_over)
+{
+	this->game_over = game_over;
+}
+
+//reset position of adventurer
+void Cave::reset_adventurer()
+{
+	srand(time(NULL));
+	do
+	{
+		adventurer.set_x(rand() % cave_size);
+		adventurer.set_y(rand() % cave_size);
+	} while (!rooms[adventurer.get_x()][adventurer.get_y()].check_if_room_empty());
+
+	set_game_over(false);
+
+	//print out new location of adventurer
+	std::cout << *this << std::endl;
+}
 
 /* mutators */
 int Cave::get_player_choice() 
@@ -223,14 +245,11 @@ void Cave::fill_cave()
 	{
 		
 		x = rand() % cave_size; y = rand() % cave_size;
-		std::cout << "wumbus x is " << x << " and y is " << y << std::endl;
-		std::cout << "adventur x is " << adventurer.get_x() << " and y is " << adventurer.get_y() << std::endl;
 
 	} while (x == adventurer.get_x() && y == adventurer.get_y());
 
 	if (rooms[x][y].check_if_room_empty()) 
 	{
-		std::cout << "Wumbus x is " << x << " and y is " << y << std::endl;
 		rooms[x][y].set_event(event, x, y);
 	}
 
@@ -241,8 +260,6 @@ void Cave::fill_cave()
 	do
 	{
 		x = rand() % cave_size; y = rand() % cave_size;
-		std::cout << "bat x is " << x << " and y is " << y << std::endl;
-		std::cout << "advent x is " << adventurer.get_x() << " and y is " << adventurer.get_y() << std::endl;
 	} while ( (x == adventurer.get_x() && y == adventurer.get_y() )|| !rooms[x][y].check_if_room_empty());
 
 	rooms[x][y].set_event(event, x, y);
@@ -250,7 +267,7 @@ void Cave::fill_cave()
 
 
 //checks around adventurer for events, uses correct percept if there is an event
-bool Cave::check_for_events()
+void Cave::check_for_events()
 {
 	//get coordinates of adventurer
 	int x = adventurer.get_x();
@@ -258,28 +275,30 @@ bool Cave::check_for_events()
 	//check north of adventurer, make sure adventurer not on top row (y = 0)
 	if ( !(y == 0) && (rooms[x][y - 1].get_event() != nullptr) ) 
 	{
-		(rooms[x][y - 1].get_event()->percept()); return true;
+		std::cout << *this << std::endl;
+		(rooms[x][y - 1].get_event()->percept());
 	}
 	
 	//check south of adventurer
 	if ( !(y == (cave_size - 1)) && (rooms[x][y + 1].get_event() != nullptr) )
 	{
-		(rooms[x][y + 1].get_event()->percept()); return true;
+		std::cout << *this << std::endl;
+		(rooms[x][y + 1].get_event()->percept());
 	}
 
 	//check east of adventurer
 	if ( !(x == (cave_size - 1)) && (rooms[x + 1][y].get_event() != nullptr) )
 	{
-		(rooms[x + 1][y].get_event()->percept()); return true;
+		std::cout << *this << std::endl;
+		(rooms[x + 1][y].get_event()->percept());
 	}
 
 	//check west of adventurer
 	if ( !(x == (0)) && (rooms[x - 1][y].get_event() != nullptr) )
 	{
-		(rooms[x - 1][y].get_event()->percept()); return true;
+		std::cout << *this << std::endl;
+		(rooms[x - 1][y].get_event()->percept());
 	}
-
-	return false;
 }
 
 //checks if adventurer is on event
@@ -329,6 +348,26 @@ void Cave::run_event(const std::string& event_name)
 		user_pause();
 		std::cout << *this << std::endl;	//print cave with new location
 	}
+}
+
+//clear and fill cave for if user wants to play again but with different layout
+void Cave::clear_and_fill_cave()
+{
+	for (int i = 0; i < cave_size; i++)
+	{
+		for (int j = 0; j < cave_size; j++)
+			rooms[i][j].nullify_event();	
+	}
+
+	//set up cave system, because new layout, reset all game tracking variables
+	this->fill_cave();
+	this->game_over = false;
+	this->wumpus_dead = false;
+	this->adventurer.set_num_arrows(3);	
+	this->adventurer.set_has_gold(false);
+
+	//print out new cave
+	std::cout << *this << std::endl;
 }
 
 /* operator overloads */

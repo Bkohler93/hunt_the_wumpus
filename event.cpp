@@ -24,6 +24,8 @@ void Event::set_x(int x)
 	this->x = x;
 }
 
+
+
 void Event::set_y(int y)
 {
 	this->y = y;

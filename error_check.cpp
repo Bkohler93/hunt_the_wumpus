@@ -21,8 +21,8 @@ int check_choice_in_range(string choice_string, int low, int high) {
 	}
 	choice = stoi(choice_string);	//choice has to be an integer, this converts string to int
 
-	if (choice < low || choice > high) choice = 0;
-	
+	if (choice < low || choice > high) 
+        return 0;	
 	return choice;
 
 }

@@ -21,6 +21,7 @@ public:
 
 	/* setters */
 	void set_event(Event*, int, int);
+	void nullify_event();
 
 	/* mutators */
 	

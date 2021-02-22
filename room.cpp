@@ -23,12 +23,16 @@ Event* Room::get_event() const
 /* setters */
 void Room::set_event(Event* event, int x, int y)
 {
-	std::cout << "inside function, printing out event symbol: " << event->get_symbol() << std::endl;
 	this->event = event;
 	this->event->set_x(x);
 	this->event->set_y(y);
 }
 
+//set event to null, used if setting up cave system again
+void Room::nullify_event()
+{
+	event = nullptr;
+}
 /* mutators */
 // bool Room::check_unplaced() const
 // {
