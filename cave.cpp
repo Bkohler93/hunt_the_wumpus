@@ -221,24 +221,31 @@ void Cave::fill_cave()
 	
 	do
 	{
+		
 		x = rand() % cave_size; y = rand() % cave_size;
-	} while (y == adventurer.get_x() && x == adventurer.get_y());
+		std::cout << "wumbus x is " << x << " and y is " << y << std::endl;
+		std::cout << "adventur x is " << adventurer.get_x() << " and y is " << adventurer.get_y() << std::endl;
 
-	if (rooms[y][x].check_if_room_empty()) 
+	} while (x == adventurer.get_x() && y == adventurer.get_y());
+
+	if (rooms[x][y].check_if_room_empty()) 
 	{
-		rooms[y][x].set_event(event, y, x);
+		std::cout << "Wumbus x is " << x << " and y is " << y << std::endl;
+		rooms[x][y].set_event(event, x, y);
 	}
 
-
+	std::cout << "---------------------------\n";
 
 	//place bats ***PACKAGE INTO OWN FUNCTION***
 	event = new Bats;
 	do
 	{
 		x = rand() % cave_size; y = rand() % cave_size;
-	} while (y == adventurer.get_x() && x == adventurer.get_y() && !rooms[y][x].check_if_room_empty());
+		std::cout << "bat x is " << x << " and y is " << y << std::endl;
+		std::cout << "advent x is " << adventurer.get_x() << " and y is " << adventurer.get_y() << std::endl;
+	} while ( (x == adventurer.get_x() && y == adventurer.get_y() )|| !rooms[x][y].check_if_room_empty());
 
-	rooms[y][x].set_event(event, y, x);
+	rooms[x][y].set_event(event, x, y);
 }
 
 

@@ -8,7 +8,7 @@ int main()
 {
 	Adventurer adventurer(4,0,0);
 
-	Cave cave(5);
+	Cave cave(2);
 	cave.fill_cave();
 	std::cout << cave << std::endl;
 	for (int i = 0; i < 10; i++)

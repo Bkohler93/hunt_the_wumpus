@@ -6,8 +6,8 @@
 class Event 
 {
 private:
-	int x = -1;	//horizontal coordinate
-	int y = -1;	//vertical coordinate
+	int x = -1;	//horizontal coordinate (second [][x] for rooms)
+	int y = -1;	//vertical coordinate (first [y][] for rooms)
 
 	char symbol;
 public:
