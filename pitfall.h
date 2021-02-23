@@ -1,20 +1,20 @@
-#ifndef WUMPUS_H
-#define WUMPUS_H
+#ifndef PITFALL_H
+#define PITFALL_H
 
 #include "event.h"
 #include <iostream>
 
-class Wumpus : public Event 
+class Pitfall : public Event 
 {
 private:
-	
+
 public:
 
 	/* destrucotr */
-	~Wumpus() {}
+	~Pitfall() {}
 
 	/* constructors */
-	Wumpus();
+	Pitfall();
 
 
 	/* mutators */

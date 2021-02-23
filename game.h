@@ -21,6 +21,7 @@ public:
 	void play_game();
 	bool continue_playing();
 	bool new_cave();
+	void print_endgame();
 
 
 	//check game parameters

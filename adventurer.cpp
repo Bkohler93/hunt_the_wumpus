@@ -62,7 +62,7 @@ int Adventurer::get_y() const
 
 
 /* mutators */
-void Adventurer::fire_arrow()
+void Adventurer::adventurer_shoots()
 {
 	this->num_arrows--;
 }

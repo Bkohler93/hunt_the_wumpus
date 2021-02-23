@@ -16,7 +16,6 @@ void Bats::percept()
 /* performs Bats version of encounter function */
 std::string Bats::encounter()
 {
-	std::cout << "A flock of Super Bats pick you and drop you in a new room.\n";
 
 	return "bats"; 
 }

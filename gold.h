@@ -1,20 +1,20 @@
-#ifndef WUMPUS_H
-#define WUMPUS_H
+#ifndef GOLD_H
+#define GOLD_H
 
 #include "event.h"
 #include <iostream>
 
-class Wumpus : public Event 
+class Gold : public Event 
 {
 private:
-	
+
 public:
 
 	/* destrucotr */
-	~Wumpus() {}
+	~Gold() {}
 
 	/* constructors */
-	Wumpus();
+	Gold();
 
 
 	/* mutators */

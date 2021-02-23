@@ -24,7 +24,7 @@ public:
 	void nullify_event();
 
 	/* mutators */
-	
+	void clear_room();	
 	bool arrow_hit_wumpus() const;
 	bool check_if_room_empty() const;
 

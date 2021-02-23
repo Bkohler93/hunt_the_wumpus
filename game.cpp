@@ -21,15 +21,17 @@ void Game::play_game()
 		player_choice = cave.get_player_choice();
 
 		if (player_choice != 32) cave.move_adventurer(player_choice);
-		else cave.fire_arrow();
+		else {cave.fire_arrow();}
 
 		//if not on event (runs events too), continue to next loop
-		if (!cave.check_if_on_event()) std::cout << cave << std::endl; //continue;
+		cave.check_if_on_event(); 
 	
 		//if adventurere dead
 		if (cave.get_game_over())
 		{
-			if (continue_playing())
+			print_endgame();
+
+			if (!cave.get_game_won() && continue_playing())
 			{
 				if (new_cave())
 					cave.clear_and_fill_cave();
@@ -37,15 +39,9 @@ void Game::play_game()
 			}
 			else return;
 		}	
-		//	if (continue?)
-		//		if (new_cave?)
-		//			populate cave system
-		//		place aventurer random spot
-		//	lose game, break
-		//if adventurer has gold and is in rope room
-		//	win game_over, break;
-		
-		//std::cout << cave << std::endl;
+
+		cave.check_for_events();
+		std::cout << cave << std::endl;
 	}
 }
 
@@ -115,25 +111,31 @@ void Game::check_valid_parameters(int argc, char* cave_size,char* bool_value)
 	}
 }
 
+//print out endgame message
+void Game::print_endgame()
+{
+	std::cout << cave << std::endl;
+
+	if (cave.get_game_won()) std::cout << "You've managed to evade the Wumpus and escape with the gold! You Win!\n";
+
+	else if (cave.get_fell_to_death()) std::cout << "AHHHHhhhhh... you fell into a bottomless pit.\n";
+
+	else if (cave.get_eaten()) std::cout << "You walked into the Wumpus' room... She woke up and ate you.\n";
+
+}
+
+
 //fill in if game is in debug mode or not
 bool Game::set_debug_mode(char* bool_arg)
 {
 
 	char* true_str = (char*) "true";
-	char* false_str = (char*) "false";
 	size_t i = 0;	//iterate through bool_arg
 
 	//check if arg is "true"
 	for (i = 0; i < strlen(true_str); i++)
 	{
 		if (bool_arg[i] != true_str[i])
-			break;
-	}
-
-	//check if arg is "false"
-	for (i = 0; i < strlen(false_str); i++)
-	{
-		if (bool_arg[i] != false_str[i])
 			return false;
 	}
 

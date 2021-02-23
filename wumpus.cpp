@@ -14,7 +14,6 @@ void Wumpus::percept()
 
 std::string Wumpus::encounter()
 {
-	std::cout << "You entered the Wumpus' Room... she eats you.\n";
 
 	return "wumpus";
 }

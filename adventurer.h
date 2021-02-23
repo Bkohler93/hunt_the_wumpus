@@ -33,7 +33,7 @@ public:
 	int get_y() const;
 
 	/* mutators */
-	void fire_arrow();	//decreases arrow count by 1
+	void adventurer_shoots();	//decreases arrow count by 1
 	void pick_up_gold();	//sets has_gold to true;
 	void move_north();
 	void move_south();

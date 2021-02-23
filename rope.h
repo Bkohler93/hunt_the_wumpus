@@ -1,20 +1,20 @@
-#ifndef WUMPUS_H
-#define WUMPUS_H
+#ifndef ROPE_H
+#define ROPE_H
 
 #include "event.h"
 #include <iostream>
 
-class Wumpus : public Event 
+class Rope : public Event 
 {
 private:
-	
+
 public:
 
 	/* destrucotr */
-	~Wumpus() {}
+	~Rope() {}
 
 	/* constructors */
-	Wumpus();
+	Rope();
 
 
 	/* mutators */

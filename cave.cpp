@@ -24,6 +24,9 @@ Cave::Cave(int cave_size, bool debug_on) : adventurer(cave_size, 0, 0)
 	this->cave_size = cave_size;
 	this->run_debug = debug_on;
 	this->game_over = false;
+	this->game_won = false;
+	this->fell_to_death = false;
+	this->eaten = false;
 	this->missed_shot = false;
 	this->wumpus_dead = false;
 }
@@ -31,14 +34,28 @@ Cave::Cave(int cave_size, bool debug_on) : adventurer(cave_size, 0, 0)
 /* getters */
 bool Cave::get_game_over() const
 {
-	if (wumpus_dead) 
-		std::cout << "You hit the wumpus!" << std::endl;
+	
 	return game_over;
 }
 
 bool Cave::get_missed_shot() const
 {
 	return missed_shot;
+}
+
+bool Cave::get_game_won() const
+{
+	return game_won;
+}
+
+bool Cave::get_fell_to_death() const
+{
+	return fell_to_death;
+}
+
+bool Cave::get_eaten() const
+{
+	return eaten;
 }
 
 /* setters */
@@ -109,21 +126,32 @@ void Cave::move_adventurer(int ascii_char)
 void Cave::fire_arrow()
 {
 	int choice = 0; 	//variable to store direction for arrow
-	
+	if (adventurer.get_num_arrows() > 0){
 	//get user choice of what direction to fire arrow
-	do
-	{
-		choice = get_player_choice();
-	} while (choice == 32);
-	//fire arrow in direction, check if wumpus is hit
-	switch(choice)
-	{
-		case 87: projectile_arrow_north();break;
-		case 65: projectile_arrow_west();break;
-		case 83: projectile_arrow_south();break;
-		case 68: projectile_arrow_east();break;
+		do
+		{
+			choice = get_player_choice();
+		} while (choice == 0 || choice == 32);
+		//fire arrow in direction, check if wumpus is hit
+		switch(choice)
+		{
+			case 87: projectile_arrow_north();break;
+			case 65: projectile_arrow_west();break;
+			case 83: projectile_arrow_south();break;
+			case 68: projectile_arrow_east();break;
+		}
 	}
 
+	else {std::cout << "Your quiver is empty.\n";}
+	
+	//decrease arrow amount in adventurer's quiver
+	adventurer.adventurer_shoots();
+
+	//chance to teleport wumpus if missed
+	if (this->missed_shot)
+		teleport_wumpus();
+
+	this->missed_shot = false;
 }
 
 
@@ -141,9 +169,9 @@ void Cave::projectile_arrow_north()
 	for (int i = 1; i < 4; i++)
 	{
 		if ((y - i >= 0) && !rooms[x][y - i].check_if_room_empty() && rooms[x][y - i].arrow_hit_wumpus())
-		{
+		{ 
+			rooms[x][y-i].nullify_event();
 			wumpus_dead = true;
-			game_over = true;
 			return;
 		}
 	}
@@ -167,8 +195,9 @@ void Cave::projectile_arrow_west()
 	{
 		if ((x - i >= 0) && !rooms[x - i][y].check_if_room_empty() && rooms[x - i][y].arrow_hit_wumpus())
 		{
+			std::cout << "Your pierced the Wumpus' heart! She's dead!" << std::endl;
+			rooms[x - i][y].nullify_event();
 			wumpus_dead = true;
-			game_over = true;
 			return;
 		}	
 	}
@@ -191,8 +220,9 @@ void Cave::projectile_arrow_east()
 	{
 		if ((x + i < cave_size) && !rooms[x + i][y].check_if_room_empty() && rooms[x + i][y].arrow_hit_wumpus())
 		{
+			std::cout << "Your pierced the Wumpus' heart! She's dead!" << std::endl;
+			rooms[x + i][y].nullify_event();
 			wumpus_dead = true;
-			game_over = true;
 			return;
 		}
 	}
@@ -215,8 +245,9 @@ void Cave::projectile_arrow_south()
 	{
 		if ((y + i >= 0) && !rooms[x][y + i].check_if_room_empty() && rooms[x][y + i].arrow_hit_wumpus())
 		{
+			std::cout << "Your pierced the Wumpus' heart! She's dead!" << std::endl;
+			rooms[x][y+i].nullify_event();
 			wumpus_dead = true;
-			game_over = true;
 			return;
 		}
 		//check if a different room was hit
@@ -230,41 +261,61 @@ void Cave::projectile_arrow_south()
 void Cave::fill_cave()
 {
 	srand(time(NULL)); //ensure random rand() seed
-	int x = -1;
-	int y = -1;
 	Event* event = nullptr; 	//used to point to new events being added
 
 	//place adventurer
 	adventurer.set_x(rand() % cave_size); 
 	adventurer.set_y(rand() % cave_size);
 
-	//place wumpus ***PACKAGE INTO OWN FUNCTION***
+	//place wumpu
 	event = new Wumpus;
 	
-	do
-	{
-		
-		x = rand() % cave_size; y = rand() % cave_size;
+	fill_room_event(event);
 
-	} while (x == adventurer.get_x() && y == adventurer.get_y());
-
-	if (rooms[x][y].check_if_room_empty()) 
+	//place 2 bats
+	for (int i = 0; i < 2; i++)
 	{
-		rooms[x][y].set_event(event, x, y);
+		event = new Bats;
+
+		//fill room with bat, requires different room each loop
+		fill_room_event(event);
 	}
 
-	std::cout << "---------------------------\n";
 
-	//place bats ***PACKAGE INTO OWN FUNCTION***
-	event = new Bats;
+	//place 2 pitfall
+	for (int i = 0; i < 2; i++)
+	{
+		event = new Pitfall;
+
+		//fill room with bat, requires different room each loop
+		fill_room_event(event);
+	}
+
+	//place 1 gold
+	event = new Gold;
+	fill_room_event(event);
+
+	//place 1 Rope
+	event = new Rope;
+	rooms[adventurer.get_x()][adventurer.get_y()].set_event(event, adventurer.get_x(), adventurer.get_y());
+
+}
+
+//fill room in cave with event pointer
+void Cave::fill_room_event(Event* add_event)
+{
+	int x = -1;
+	int y = -1;
+	//ensure that new coordinate will not replace other events
 	do
 	{
 		x = rand() % cave_size; y = rand() % cave_size;
-	} while ( (x == adventurer.get_x() && y == adventurer.get_y() )|| !rooms[x][y].check_if_room_empty());
 
-	rooms[x][y].set_event(event, x, y);
+	} while ( (x == adventurer.get_x() && y == adventurer.get_y()) || !rooms[x][y].check_if_room_empty());
+
+	//fill room with event
+	rooms[x][y].set_event(add_event, x, y);
 }
-
 
 //checks around adventurer for events, uses correct percept if there is an event
 void Cave::check_for_events()
@@ -272,31 +323,30 @@ void Cave::check_for_events()
 	//get coordinates of adventurer
 	int x = adventurer.get_x();
 	int y = adventurer.get_y();
+	
+	//print out cave before printing out a percept
+
 	//check north of adventurer, make sure adventurer not on top row (y = 0)
 	if ( !(y == 0) && (rooms[x][y - 1].get_event() != nullptr) ) 
 	{
-		std::cout << *this << std::endl;
 		(rooms[x][y - 1].get_event()->percept());
 	}
 	
 	//check south of adventurer
 	if ( !(y == (cave_size - 1)) && (rooms[x][y + 1].get_event() != nullptr) )
 	{
-		std::cout << *this << std::endl;
 		(rooms[x][y + 1].get_event()->percept());
 	}
 
 	//check east of adventurer
 	if ( !(x == (cave_size - 1)) && (rooms[x + 1][y].get_event() != nullptr) )
 	{
-		std::cout << *this << std::endl;
 		(rooms[x + 1][y].get_event()->percept());
 	}
 
 	//check west of adventurer
 	if ( !(x == (0)) && (rooms[x - 1][y].get_event() != nullptr) )
 	{
-		std::cout << *this << std::endl;
 		(rooms[x - 1][y].get_event()->percept());
 	}
 }
@@ -323,31 +373,67 @@ void Cave::run_event(const std::string& event_name)
 	//perform results of Wumpus ***MAYBE REPACKAGE?***
 	if (event_name == "wumpus")
 	{
-		game_over = true; return;
+		eaten = true;
+		game_over = true; 
+		return;
 	}
 
 	//perform results of Bats ***MAYBE REPACKAGE?***
 	else if (event_name == "bats")
 	{	
-		srand(time(NULL));
-		//store adventurer's current location and create new location
-		int x = adventurer.get_x(); int new_x;
-		int y = adventurer.get_y(); int new_y;
-
-		//continue to reassign adventurer coordinates if same coordinates are 
-		//populated
-		do
-		{
-			new_x = rand() % cave_size; new_y = rand() % cave_size;
-		}	while (new_x == x && new_y == y);
-		
-		//set new adventurer position from bats teleporting character
-		adventurer.set_x(new_x); adventurer.set_y(new_y);
-
-		//pause for user to press enter before continue
-		user_pause();
-		std::cout << *this << std::endl;	//print cave with new location
+		std::cout << "A flock of Super Bats picked you up and dropped you in a new room.\n";
+		displace_adventurer();
+		return;
 	}
+
+	//perform results of Pitfall
+	else if (event_name == "pitfall")
+	{
+		std::cout << "AHHHhhhh... you fell down a bottomless pit.\n";
+		fell_to_death = true;
+		game_over = true;
+		return;	
+	}
+
+	//perform results of Gold
+	else if (event_name == "gold")
+	{	
+		std::cout <<"You've found the gold! Now get out of there!\n";
+		adventurer.set_has_gold(true);
+		rooms[adventurer.get_x()][adventurer.get_y()].nullify_event();	
+	}
+
+	else if (event_name == "rope" && adventurer.get_has_gold())
+	{
+		this->game_won = true;
+		game_over = true;
+		return;
+	}
+}
+
+
+//place adventurer in random spot
+void Cave::displace_adventurer() 
+{
+	srand(time(NULL));
+	//store adventurer's current location and create new location
+	int x = adventurer.get_x(); int new_x;
+	int y = adventurer.get_y(); int new_y;
+
+	//continue to reassign adventurer coordinates if same coordinates are 
+	//populated
+	do
+	{
+		new_x = rand() % cave_size; new_y = rand() % cave_size;
+	}	
+	while ( (new_x == x && new_y == y) || !rooms[new_x][new_y].check_if_room_empty());
+	
+	//set new adventurer position from bats teleporting character
+	adventurer.set_x(new_x); adventurer.set_y(new_y);
+
+	//pause for user to press enter before continue
+	user_pause();
+	std::cout << *this << std::endl;	//print cave with new location
 }
 
 //clear and fill cave for if user wants to play again but with different layout
@@ -361,6 +447,9 @@ void Cave::clear_and_fill_cave()
 
 	//set up cave system, because new layout, reset all game tracking variables
 	this->fill_cave();
+	this->eaten = false;
+	this->fell_to_death = false;
+	this->missed_shot = false;
 	this->game_over = false;
 	this->wumpus_dead = false;
 	this->adventurer.set_num_arrows(3);	
@@ -368,6 +457,57 @@ void Cave::clear_and_fill_cave()
 
 	//print out new cave
 	std::cout << *this << std::endl;
+}
+
+
+//chance to teleport wumpus
+void Cave::teleport_wumpus()
+{
+	int choice = 0;
+	int new_x;
+	int new_y;
+
+	srand(time(NULL));
+	choice = rand() % 4;
+
+	//75% chance to teleport, choice can be int 0-3, meaning 0,1, or 2 causes wumpus to teleport
+	if (choice < 3) {
+
+		std::cout << "The Wumpus heard your shot miss, and has ran into a new room.\n";
+
+		do
+		{
+			new_x = rand() % cave_size;
+			new_y = rand() % cave_size;
+		} while ( (new_x == adventurer.get_x() && new_y == adventurer.get_y()) || !rooms[new_x][new_y].check_if_room_empty());
+	
+		//move wumpus to new coordinates
+		std::vector<int> wump_coords;
+		find_wump_coords(wump_coords);
+		rooms[wump_coords[0]][wump_coords[1]].nullify_event();
+		Event* new_wump = new Wumpus;
+
+		rooms[new_x][new_y].set_event(new_wump, new_x, new_y);
+	}
+}
+
+
+//find wumpus coordinates
+void Cave::find_wump_coords(std::vector<int> &wump_coords)
+{
+	//loop through each row
+	for (int i = 0; i < cave_size; i++)
+	{
+		//loop through columns
+		for (int j = 0; j < cave_size; j++)
+		{
+			if (!rooms[i][j].check_if_room_empty() && rooms[i][j].get_event()->encounter() == "wumpus")
+			{
+				wump_coords.push_back(i);
+				wump_coords.push_back(j);
+			}
+		}
+	}
 }
 
 /* operator overloads */
@@ -396,8 +536,13 @@ std::ostream& operator<<(std::ostream& out, const Cave& cave)
 			//check if current space is same coordinates as adventurer
 			if (row_it == cave.adventurer.get_y() && col_it == cave.adventurer.get_x())
 			{
-				std::cout << 'O' << ' '; col_it++;
+				std::cout << 'A' << ' '; col_it++;
 			}
+			else if (row_it == cave.adventurer.get_y() && col_it == cave.adventurer.get_x() && cave.get_game_over())
+			{
+				std::cout << '!' << ' '; col_it++;
+			}
+				
 			else if (!cave.run_debug) { std::cout <<  "  "; col_it++;}
 			else { std::cout << cave.rooms[col_it][row_it] << ' '; col_it++;}
 	
@@ -413,6 +558,7 @@ std::ostream& operator<<(std::ostream& out, const Cave& cave)
 	//print out final last line
 	for (int i = 0; i < cave.cave_size; i++) std::cout << "+---";
 		std::cout << "+\n";
+
 
 	return out;	
 }

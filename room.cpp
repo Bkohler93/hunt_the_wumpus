@@ -11,6 +11,7 @@ Room::~Room()
 	if (event != nullptr) 
 	{
 		delete event;
+		event = nullptr;
 	}
 }
 
@@ -31,9 +32,11 @@ void Room::set_event(Event* event, int x, int y)
 //set event to null, used if setting up cave system again
 void Room::nullify_event()
 {
+	delete event;
 	event = nullptr;
 }
 /* mutators */
+
 // bool Room::check_unplaced() const
 // {
 // 	if (event == nullptr) {
