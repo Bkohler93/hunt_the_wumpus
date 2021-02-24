@@ -144,11 +144,10 @@ void Cave::fire_arrow()
 
 	else {std::cout << "Your quiver is empty.\n";}
 	
-	//decrease arrow amount in adventurer's quiver
-	adventurer.adventurer_shoots();
+	
 
 	//chance to teleport wumpus if missed
-	if (this->missed_shot)
+	if (this->missed_shot && !wumpus_dead)
 		teleport_wumpus();
 
 	this->missed_shot = false;
@@ -165,11 +164,15 @@ void Cave::projectile_arrow_north()
 	int y = adventurer.get_y();
 	std::cout << "firing arrow north" << std::endl;
 	
+	//decrease arrow amount in adventurer's quiver
+	adventurer.adventurer_shoots();
+	
 	//arrow flies through 3 rooms
 	for (int i = 1; i < 4; i++)
 	{
 		if ((y - i >= 0) && !rooms[x][y - i].check_if_room_empty() && rooms[x][y - i].arrow_hit_wumpus())
-		{ 
+		{
+			std::cout << "Your arrow pierced the Wumpus' heart! She's dead!" << std::endl; 
 			rooms[x][y-i].nullify_event();
 			wumpus_dead = true;
 			return;
@@ -190,12 +193,15 @@ void Cave::projectile_arrow_west()
 	int y = adventurer.get_y();
 	std::cout << "firing arrow west" << std::endl;
 	
+	//decrease arrow amount in adventurer's quiver
+	adventurer.adventurer_shoots();
+	
 	//arrow flies through 3 rooms
 	for (int i = 1; i < 4; i++)
 	{
 		if ((x - i >= 0) && !rooms[x - i][y].check_if_room_empty() && rooms[x - i][y].arrow_hit_wumpus())
 		{
-			std::cout << "Your pierced the Wumpus' heart! She's dead!" << std::endl;
+			std::cout << "Your arrow pierced the Wumpus' heart! She's dead!" << std::endl;
 			rooms[x - i][y].nullify_event();
 			wumpus_dead = true;
 			return;
@@ -215,12 +221,15 @@ void Cave::projectile_arrow_east()
 	int y = adventurer.get_y();
 	std::cout << "firing east" << std::endl;
 	
+	//decrease arrow amount in adventurer's quiver
+	adventurer.adventurer_shoots();
+	
 	//arrow flies through 3 rooms
 	for (int i = 1; i < 4; i++)
 	{
 		if ((x + i < cave_size) && !rooms[x + i][y].check_if_room_empty() && rooms[x + i][y].arrow_hit_wumpus())
 		{
-			std::cout << "Your pierced the Wumpus' heart! She's dead!" << std::endl;
+			std::cout << "Your arrow pierced the Wumpus' heart! She's dead!" << std::endl;
 			rooms[x + i][y].nullify_event();
 			wumpus_dead = true;
 			return;
@@ -240,18 +249,21 @@ void Cave::projectile_arrow_south()
 	int x = adventurer.get_x();
 	int y = adventurer.get_y();
 	
+	//decrease arrow amount in adventurer's quiver
+	adventurer.adventurer_shoots();
+	
 	//arrow flies through 3 rooms
 	for (int i = 1; i < 4; i++)
 	{
-		if ((y + i >= 0) && !rooms[x][y + i].check_if_room_empty() && rooms[x][y + i].arrow_hit_wumpus())
+		if ((y + i < cave_size) && !rooms[x][y + i].check_if_room_empty() && rooms[x][y + i].arrow_hit_wumpus())
 		{
-			std::cout << "Your pierced the Wumpus' heart! She's dead!" << std::endl;
+			std::cout << "Your arrow pierced the Wumpus' heart! She's dead!" << std::endl;
 			rooms[x][y+i].nullify_event();
 			wumpus_dead = true;
 			return;
 		}
 		//check if a different room was hit
-		if ((y + i >= 0) && !rooms[x][y + i].check_if_room_empty()) break;
+		if ((y + i < cave_size) && !rooms[x][y + i].check_if_room_empty()) break;
 	}
 	missed_shot = true;
 }
@@ -508,6 +520,265 @@ void Cave::find_wump_coords(std::vector<int> &wump_coords)
 			}
 		}
 	}
+}
+
+/* AI functions */
+void Cave::ai_random_move()
+{
+	srand(time(NULL));
+
+	//check if random move is far right side
+	if (ai_random_right_border()) {}
+	else if (ai_random_bot_border()) {}
+	else if (ai_random_left_border()) {}
+	else if (ai_random_top_border()) {}
+	else
+	{
+		//4 choices for AI to move
+		int move = rand() % 4;
+		switch(move)
+		{
+			case 0: adventurer.move_north();break;
+			case 1: adventurer.move_south();break;
+			case 2: adventurer.move_east();break;
+			case 3: adventurer.move_west();break;
+		}
+	}
+}
+
+//random movement based on if on right border
+bool Cave::ai_random_right_border()
+{
+	if (adventurer.get_x() == cave_size - 1 || ( !(rooms[adventurer.get_x() + 1][adventurer.get_y()].check_if_room_empty()) && 
+		(rooms[adventurer.get_x() + 1][adventurer.get_y()].get_event())->encounter() == "pitfall") )
+	{
+
+		int move = rand() % 3;
+		switch (move)
+		{
+			case 0: adventurer.move_west();break;
+			case 1: adventurer.move_south();break;
+			case 2: adventurer.move_north();break;
+		}
+		return true;
+	}
+	return false;
+}
+
+//random movement based on if on left border
+bool Cave::ai_random_left_border()
+{
+	if (adventurer.get_x() == 0 || ( !(rooms[adventurer.get_x() - 1][adventurer.get_y()].check_if_room_empty()) && 
+		(rooms[adventurer.get_x() - 1][adventurer.get_y()].get_event())->encounter() == "pitfall") )
+	{
+
+		int move = rand() % 3;
+		switch (move)
+		{
+			case 0: adventurer.move_east();break;
+			case 1: adventurer.move_south();break;
+			case 2: adventurer.move_north();break;
+		}
+		return true;
+	}
+	return false;
+}
+
+
+//random movement based on if on bottomt border
+bool Cave::ai_random_bot_border()
+{
+	if (adventurer.get_y() == cave_size - 1 || ( !(rooms[adventurer.get_x()][adventurer.get_y() + 1].check_if_room_empty()) && 
+		(rooms[adventurer.get_x()][adventurer.get_y() + 1].get_event())->encounter() == "pitfall") )
+	{
+
+		int move = rand() % 3;
+		switch (move)
+		{
+			case 0: adventurer.move_east();break;
+			case 1: adventurer.move_west();break;
+			case 2: adventurer.move_north();break;
+		}
+		return true;
+	}
+	return false;
+}
+
+//random movement based on if on top border
+bool Cave::ai_random_top_border()
+{
+	if (adventurer.get_y() == 0 || ( !(rooms[adventurer.get_x()][adventurer.get_y() - 1].check_if_room_empty()) && 
+		(rooms[adventurer.get_x()][adventurer.get_y() - 1].get_event())->encounter() == "pitfall") )
+	{
+		int move = rand() % 3;
+		switch (move)
+		{
+			case 0: adventurer.move_east();break;
+			case 1: adventurer.move_west();break;
+			case 2: adventurer.move_south();break;
+		}
+		return true;
+	}
+	return false;
+}
+
+
+//check if gold is nearby, move towards gold
+bool Cave::ai_check_gold()
+{
+	//store adventurer coords
+	int x = adventurer.get_x();
+	int y = adventurer.get_y();
+	//check room west
+	if ( (x - 1 >= 0) && !( rooms[x - 1][y].check_if_room_empty()) && ((rooms[x - 1][y].get_event())->encounter() == "gold" ))
+	{
+		adventurer.move_west();
+		return true;
+	}
+	//check room east 
+	if ( (x + 1 < cave_size) && !( rooms[x + 1][y].check_if_room_empty())  && ( (rooms[x + 1][y].get_event())->encounter() == "gold" ) )
+	{
+		adventurer.move_east();
+		return true;
+	}
+
+	//check room south 
+	if ( (y + 1 < cave_size) && (!( rooms[x][y + 1].check_if_room_empty()) && (rooms[x][y + 1].get_event())->encounter() == "gold" ) )
+	{
+		
+		adventurer.move_south();
+		return true;
+	}
+
+	
+	//check room north 
+	if ( (y - 1 >= 0) && !( rooms[x][y - 1].check_if_room_empty()) && ( (rooms[x][y - 1].get_event())->encounter() == "gold" ) )
+	{
+		adventurer.move_north();
+		return true;
+	}
+	
+	return false;
+}
+
+//check if rope is nearby, move towards rope
+bool Cave::ai_check_rope()
+{
+	//store adventurer coords
+	int x = adventurer.get_x();
+	int y = adventurer.get_y();
+	
+	//check room west
+	if ( (x - 1 >= 0) && !( rooms[x - 1][y].check_if_room_empty()) && ((rooms[x - 1][y].get_event())->encounter() == "rope" ))
+	{
+		adventurer.move_west();
+		return true;
+	}
+	//check room east 
+	if ( (x + 1 < cave_size) && !( rooms[x + 1][y].check_if_room_empty())  && ( (rooms[x + 1][y].get_event())->encounter() == "rope" ) )
+	{
+		adventurer.move_east();
+		return true;
+	}
+
+	//check room south 
+	if ( (y + 1 < cave_size) && (!( rooms[x][y + 1].check_if_room_empty()) && (rooms[x][y + 1].get_event())->encounter() == "rope" ) )
+	{
+		
+		adventurer.move_south();
+		return true;
+	}
+
+	
+	//check room north 
+	if ( (y - 1 >= 0) && !( rooms[x][y - 1].check_if_room_empty()) && ( (rooms[x][y - 1].get_event())->encounter() == "rope" ) )
+	{
+		adventurer.move_north();
+		return true;
+	}
+	
+	return false;
+}
+
+
+/* check if adventurer has gold bag */
+bool Cave::check_adventurer_gold()
+{
+	return adventurer.get_has_gold();
+}
+
+
+/* check if wumpus is nearby, shoot if so */
+bool Cave::ai_check_wumpus()
+{
+	//store adventurer coords
+	int x = adventurer.get_x();
+	int y = adventurer.get_y();
+	
+	//check room west
+	if ( (x - 1 >= 0) && !( rooms[x - 1][y].check_if_room_empty()) && ((rooms[x - 1][y].get_event())->encounter() == "wumpus" ))
+	{
+		projectile_arrow_west();
+		return true;
+	}
+	//check room east 
+	if ( (x + 1 < cave_size) && !( rooms[x + 1][y].check_if_room_empty())  && ( (rooms[x + 1][y].get_event())->encounter() == "wumpus" ) )
+	{
+		projectile_arrow_east();
+		return true;
+	}
+
+	//check room south 
+	if ( (y + 1 < cave_size) && (!( rooms[x][y + 1].check_if_room_empty()) && (rooms[x][y + 1].get_event())->encounter() == "wumpus" ) )
+	{
+		projectile_arrow_south();
+		return true;
+	}
+
+	
+	//check room north 
+	if ( (y - 1 >= 0) && !( rooms[x][y - 1].check_if_room_empty()) && ( (rooms[x][y - 1].get_event())->encounter() == "wumpus" ) )
+	{
+		projectile_arrow_north();
+		return true;
+	}
+	
+	return false;
+}
+
+/* check if near pitfall */
+bool Cave::ai_check_pitfall()
+{
+	//store adventurer coords
+	int x = adventurer.get_x();
+	int y = adventurer.get_y();
+		
+	//check room west
+	if ( (x - 1 >= 0) && !( rooms[x - 1][y].check_if_room_empty()) && ((rooms[x - 1][y].get_event())->encounter() == "pitfall" ))
+	{
+		return ai_random_left_border();
+	}
+	//check room east 
+	if ( (x + 1 < cave_size) && !( rooms[x + 1][y].check_if_room_empty())  && ( (rooms[x + 1][y].get_event())->encounter() == "pitfall" ) )
+	{
+		return ai_random_right_border();
+	}
+
+	//check room south 
+	if ( (y + 1 < cave_size) && (!( rooms[x][y + 1].check_if_room_empty()) && (rooms[x][y + 1].get_event())->encounter() == "pitfall" ) )
+	{
+		return ai_random_bot_border();
+	}
+
+	
+	//check room north 
+	if ( (y - 1 >= 0) && !( rooms[x][y - 1].check_if_room_empty()) && ( (rooms[x][y - 1].get_event())->encounter() == "pitfall" ) )
+	{
+		return ai_random_top_border();
+	}
+	
+	return false;
+
 }
 
 /* operator overloads */

@@ -14,6 +14,7 @@ void Game::play_game()
 	cave.fill_cave();
 
 	int player_choice = 0;
+	cave.check_for_events();
 	std::cout << cave << std::endl;
 
 	while (true)
@@ -45,6 +46,46 @@ void Game::play_game()
 	}
 }
 
+
+//watch computer play
+void Game::play_ai_game()
+{
+	cave.fill_cave();
+	cave.check_for_events();
+	std::cout << cave << std::endl;
+	user_pause();
+
+	while(true)
+	{
+		//check if gold is nearby
+		if (cave.ai_check_gold());
+		else if (cave.check_adventurer_gold() && cave.ai_check_rope());
+		else if (cave.ai_check_wumpus());
+		else if (cave.ai_check_pitfall());
+		else {cave.ai_random_move();}
+
+		cave.check_if_on_event();
+
+		if (cave.get_game_over())
+		{
+			print_endgame();
+
+			if (!cave.get_game_won() && continue_playing())
+			{
+				if (new_cave())
+					cave.clear_and_fill_cave();
+				else (cave.reset_adventurer());	
+			}
+			else return;
+		}
+		
+		cave.check_for_events();
+		std::cout << cave << std::endl;
+		//pause before computer performs action
+		user_pause();
+	
+	}
+}
 //ask if use wants to keep playing
 bool Game::continue_playing()
 {
@@ -121,6 +162,24 @@ void Game::print_endgame()
 	else if (cave.get_fell_to_death()) std::cout << "AHHHHhhhhh... you fell into a bottomless pit.\n";
 
 	else if (cave.get_eaten()) std::cout << "You walked into the Wumpus' room... She woke up and ate you.\n";
+
+}
+
+
+bool Game::get_auto_play()
+{
+	std::string choice;
+	int choice_int;
+	do
+	{
+		std::cout << "Enter '1' to watch the computer play or '2' to play yourself: ";
+		getline(std::cin, choice);
+		choice_int = check_choice_in_range(choice, 1, 2);
+	}  while (choice_int == 0);
+
+	if (choice_int == 1) return true;
+	
+	return false;
 
 }
 

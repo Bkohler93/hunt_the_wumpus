@@ -8,7 +8,6 @@
 
 int main(int argc, char* argv[])
 {
-	std::cout << "hello" << std::endl;
 	try 
 	{
 		//check if command line args are valid
@@ -16,11 +15,12 @@ int main(int argc, char* argv[])
 		
 		int cave_size = atoi(argv[1]);
 		bool debug_on = Game::set_debug_mode(argv[2]);
-
+		bool auto_play = Game::get_auto_play();
+		
 		//start game with debug mode on/off
 		Game game(cave_size, debug_on);
 
-		game.play_game();
+		auto_play ? game.play_ai_game() : game.play_game();
 	}
 
 	catch(invalid_argument &arg)
