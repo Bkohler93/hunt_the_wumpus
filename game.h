@@ -19,12 +19,14 @@ public:
 
 	//game funcs
 	void play_game();
+	void play_ai_game();
 	bool continue_playing();
 	bool new_cave();
 	void print_endgame();
-
+	
 
 	//check game parameters
 	static void check_valid_parameters(int argc, char* cave_size, char* bool_value);
 	static bool set_debug_mode(char* bool_arg);
+	static bool get_auto_play();
 };

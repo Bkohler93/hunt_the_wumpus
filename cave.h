@@ -60,6 +60,19 @@ public:
 	void clear_and_fill_cave();
 	void teleport_wumpus();
 
+
+	/* AI functions */
+	void ai_random_move();
+	bool ai_random_right_border();
+	bool ai_random_left_border();
+	bool ai_random_bot_border();
+	bool ai_random_top_border();
+	bool ai_check_gold();
+	bool ai_check_rope();
+	bool ai_check_wumpus();
+	bool ai_check_pitfall();
+	bool ai_check_bats();
+	bool check_adventurer_gold();	
 	/* operator overloads */
 	friend std::ostream& operator<<(std::ostream& out, const Cave& cave);
 	//friend bool operator==()
